@@ -2,8 +2,10 @@ package com.lautadev.microservice_account.service;
 
 import com.lautadev.microservice_account.Throwable.AccountValidator;
 import com.lautadev.microservice_account.dto.AccountDTO;
+import com.lautadev.microservice_account.dto.UpdateBalanceDTO;
 import com.lautadev.microservice_account.dto.UserDTO;
 import com.lautadev.microservice_account.model.Account;
+import com.lautadev.microservice_account.model.TypeOfOperation;
 import com.lautadev.microservice_account.repository.IAccountRepository;
 import com.lautadev.microservice_account.repository.IUserAPIClient;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -38,11 +40,16 @@ public class AccountService implements IAccountService{
     @Override
     @CircuitBreaker(name = "microservice-user",fallbackMethod = "fallBackFindAccount")
     @Retry(name = "microservice-user")
-    public AccountDTO findAccount(Long idAccount) {
+    public AccountDTO findAccountAndUser(Long idAccount) {
         Account account = accountRepo.findById(idAccount).orElse(null);
         assert account != null;
         UserDTO userDTO = userAPI.findUserAndBenefit(account.getIdUser());
         return (new AccountDTO(userDTO,account));
+    }
+
+    @Override
+    public Account findAccount(Long idAccount) {
+        return accountRepo.findById(idAccount).orElse(null);
     }
 
     public AccountDTO fallBackFindAccount(Throwable throwable) { return new AccountDTO();}
@@ -64,5 +71,17 @@ public class AccountService implements IAccountService{
         accountEdit.setIdUser(account.getIdUser());
 
         this.saveAccount(accountEdit);
+    }
+
+    @Override
+    public void updateBalance(Long idAccount, UpdateBalanceDTO updateBalanceDTO) {
+        Account account = this.findAccount(idAccount);
+        if(updateBalanceDTO.getTypeOfOperation().equals(TypeOfOperation.MoneyReceived) ||
+                updateBalanceDTO.getTypeOfOperation().equals(TypeOfOperation.BalanceTopUp)){
+            double currentBalance = account.getBalance();
+            currentBalance += updateBalanceDTO.getAmount();
+            account.setBalance(currentBalance);
+            this.saveAccount(account);
+        }
     }
 }
