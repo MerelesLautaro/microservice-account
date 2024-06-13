@@ -12,7 +12,9 @@ public interface IAccountService {
     public List<Account> getAccounts();
     public AccountDTO findAccountAndUser(Long idAccount);
     public Account findAccount(Long idAccount);
+    public Account findByAlias(String alias);
+    public Account findByCvu(String cvu);
     public void deleteAccount(Long idAccount);
     public void editAccount(Long idAccount, Account account);
-    public void updateBalance(Long idAccount, UpdateBalanceDTO updateBalanceDTO);
+    public void updateBalance(Long idAccount, UpdateBalanceDTO updateBalanceDTO,String methodOverride);
 }

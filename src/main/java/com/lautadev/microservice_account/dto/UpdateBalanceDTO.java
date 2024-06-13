@@ -12,4 +12,5 @@ import lombok.Setter;
 public class UpdateBalanceDTO {
     private double amount;
     private TypeOfOperation typeOfOperation;
+    private String aliasOrCvu;
 }

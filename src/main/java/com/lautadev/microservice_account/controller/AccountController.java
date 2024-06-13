@@ -6,6 +6,7 @@ import com.lautadev.microservice_account.model.Account;
 import com.lautadev.microservice_account.service.IAccountService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,6 +43,20 @@ public class AccountController {
         return ResponseEntity.ok(accountDTO);
     }
 
+    @GetMapping("/get/alias/{alias}")
+    public ResponseEntity<Account> findByAlias(@PathVariable String alias){
+        Account account  = accountServ.findByAlias(alias);
+        if(account == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(account);
+    }
+
+    @GetMapping("/get/cvu/{cvu}")
+    public ResponseEntity<Account> findByCvu(@PathVariable String cvu){
+        Account account  = accountServ.findByCvu(cvu);
+        if(account == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(account);
+    }
+
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteAccount(@PathVariable Long idAccount){
         accountServ.deleteAccount(idAccount);
@@ -54,12 +69,18 @@ public class AccountController {
         return ResponseEntity.ok(accountServ.findAccountAndUser(idAccount));
     }
 
-    @PutMapping("/updateBalance/{id}")
-    public ResponseEntity<AccountDTO> updateBalance(@PathVariable Long id, @RequestBody UpdateBalanceDTO updateBalanceDTO){
-        accountServ.updateBalance(id,updateBalanceDTO);
-        AccountDTO accountDTO = accountServ.findAccountAndUser(id);
-        if(accountDTO == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(accountDTO);
+    @PostMapping("/updateBalance/{id}")
+    public ResponseEntity<AccountDTO> updateBalance(@PathVariable Long id, @RequestBody UpdateBalanceDTO updateBalanceDTO,
+                                                    @RequestHeader(value = "X-HTTP-Method-Override", required = false)
+                                                    String methodOverride){
+        if ("PATCH".equalsIgnoreCase(methodOverride)) {
+            accountServ.updateBalance(id, updateBalanceDTO, methodOverride);
+            AccountDTO accountDTO = accountServ.findAccountAndUser(id);
+            if (accountDTO == null) return ResponseEntity.notFound().build();
+            return ResponseEntity.ok(accountDTO);
+        } else {
+            return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
+        }
     }
 
 }

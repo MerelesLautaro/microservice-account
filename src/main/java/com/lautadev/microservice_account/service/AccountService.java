@@ -52,6 +52,16 @@ public class AccountService implements IAccountService{
         return accountRepo.findById(idAccount).orElse(null);
     }
 
+    @Override
+    public Account findByAlias(String alias) {
+        return accountRepo.findByAlias(alias).orElse(null);
+    }
+
+    @Override
+    public Account findByCvu(String cvu) {
+        return accountRepo.findByCvu(cvu).orElse(null);
+    }
+
     public AccountDTO fallBackFindAccount(Throwable throwable) { return new AccountDTO();}
 
     @Override
@@ -74,12 +84,37 @@ public class AccountService implements IAccountService{
     }
 
     @Override
-    public void updateBalance(Long idAccount, UpdateBalanceDTO updateBalanceDTO) {
+    public void updateBalance(Long idAccount, UpdateBalanceDTO updateBalanceDTO,String methodOverride) {
         Account account = this.findAccount(idAccount);
         if(updateBalanceDTO.getTypeOfOperation().equals(TypeOfOperation.MoneyReceived) ||
                 updateBalanceDTO.getTypeOfOperation().equals(TypeOfOperation.BalanceTopUp)){
             double currentBalance = account.getBalance();
             currentBalance += updateBalanceDTO.getAmount();
+            account.setBalance(currentBalance);
+            this.saveAccount(account);
+        } else if(updateBalanceDTO.getTypeOfOperation().equals(TypeOfOperation.WithDrawalOfMoney)){
+            double currentBalance = account.getBalance();
+            currentBalance -= updateBalanceDTO.getAmount();
+            account.setBalance(currentBalance);
+            this.saveAccount(account);
+        } else if(updateBalanceDTO.getTypeOfOperation().equals(TypeOfOperation.MoneyTransfer)){
+            if(this.findByAlias(updateBalanceDTO.getAliasOrCvu()) != null){
+                // Account receiving the transfer
+                Account destinationAccount = this.findByAlias(updateBalanceDTO.getAliasOrCvu());
+                double currentBalance = destinationAccount.getBalance();
+                currentBalance += updateBalanceDTO.getAmount();
+                destinationAccount.setBalance(currentBalance);
+                this.saveAccount(destinationAccount);
+            } else if(this.findByCvu(updateBalanceDTO.getAliasOrCvu()) != null) {
+                // Account receiving the transfer
+                Account destinationAccount = this.findByAlias(updateBalanceDTO.getAliasOrCvu());
+                double currentBalance = destinationAccount.getBalance();
+                currentBalance += updateBalanceDTO.getAmount();
+                destinationAccount.setBalance(currentBalance);
+                this.saveAccount(destinationAccount);
+            }
+            double currentBalance = account.getBalance();
+            currentBalance -= updateBalanceDTO.getAmount();
             account.setBalance(currentBalance);
             this.saveAccount(account);
         }
