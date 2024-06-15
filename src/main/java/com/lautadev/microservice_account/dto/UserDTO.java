@@ -14,4 +14,5 @@ public class UserDTO {
     private String surname;
     private String dni;
     private BenefitDTO benefit;
+    private int tickets;
 }

@@ -2,6 +2,7 @@ package com.lautadev.microservice_account.service;
 
 import com.lautadev.microservice_account.Throwable.AccountValidator;
 import com.lautadev.microservice_account.dto.AccountDTO;
+import com.lautadev.microservice_account.dto.BenefitDTO;
 import com.lautadev.microservice_account.dto.UpdateBalanceDTO;
 import com.lautadev.microservice_account.dto.UserDTO;
 import com.lautadev.microservice_account.model.Account;
@@ -113,10 +114,19 @@ public class AccountService implements IAccountService{
                 destinationAccount.setBalance(currentBalance);
                 this.saveAccount(destinationAccount);
             }
-            double currentBalance = account.getBalance();
-            currentBalance -= updateBalanceDTO.getAmount();
-            account.setBalance(currentBalance);
-            this.saveAccount(account);
+        } else if(updateBalanceDTO.getTypeOfOperation().equals(TypeOfOperation.QRpayment)){
+            AccountDTO accountDTO = this.findAccountAndUser(account.getIdUser());
+            UserDTO userDTO = accountDTO.getUser();
+            BenefitDTO benefitDTO = userDTO.getBenefit();
+            if(benefitDTO != null && userDTO.getTickets() >= 1){
+                int tickets = 1;
+                userAPI.updateTickets(account.getIdUser(),tickets,"PATCH");
+            } else if(benefitDTO == null||userDTO.getTickets() == 0) {
+                double currentBalance = account.getBalance();
+                currentBalance -= updateBalanceDTO.getAmount();
+                account.setBalance(currentBalance);
+                this.saveAccount(account);
+            }
         }
     }
 }
