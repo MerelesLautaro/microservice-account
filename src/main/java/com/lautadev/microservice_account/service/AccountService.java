@@ -79,6 +79,11 @@ public class AccountService implements IAccountService{
     }
 
     @Override
+    public Account findAccountByUser(Long idUser) {
+        return accountRepo.findAccountByIdUser(idUser).orElse(null);
+    }
+
+    @Override
     public Account findByAlias(String alias) {
         return accountRepo.findByAlias(alias).orElse(null);
     }

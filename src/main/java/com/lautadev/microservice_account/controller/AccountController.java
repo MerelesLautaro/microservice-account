@@ -57,6 +57,13 @@ public class AccountController {
         return ResponseEntity.ok(account);
     }
 
+    @GetMapping("/get/user/{id}")
+    public ResponseEntity<Account> findAccountByUser(@PathVariable Long id){
+        Account account = accountServ.findAccountByUser(id);
+        if(account == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(account);
+    }
+
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteAccount(@PathVariable Long idAccount){
         accountServ.deleteAccount(idAccount);

@@ -12,6 +12,7 @@ public interface IAccountService {
     public List<Account> getAccounts();
     public AccountDTO findAccountAndUser(Long idAccount);
     public Account findAccount(Long idAccount);
+    public Account findAccountByUser(Long idUser);
     public Account findByAlias(String alias);
     public Account findByCvu(String cvu);
     public void deleteAccount(Long idAccount);

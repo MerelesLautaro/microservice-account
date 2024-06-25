@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface IAccountRepository extends JpaRepository<Account, Long> {
     Optional<Account> findByAlias(String alias);
     Optional<Account> findByCvu(String cvu);
+    Optional<Account> findAccountByIdUser(Long idUser);
 }
